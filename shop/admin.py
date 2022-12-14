@@ -10,7 +10,7 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['ref_code', 'user', 'completed']
+    list_display = ['refund_code', 'user', 'completed']
     list_filter = ('completed', )
     inlines = [OrderItemInline, ]
 

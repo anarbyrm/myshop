@@ -6,7 +6,7 @@ import string
 from uuid import uuid4
 
 
-def ref_code_generator(size=10, chars=string.ascii_uppercase + string.digits):
+def refund_code_generator(size=10, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
 
@@ -119,14 +119,24 @@ class OrderItem(BaseModel):
 
 
 class Order(BaseModel):
+    STATUS_CHOICES = (
+        ('P', 'Preparing'),
+        ('S', 'Shipped'),
+        ('D', 'Delivered'),
+    )
+
     UUID = models.UUIDField(default=uuid4, primary_key=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     items = models.ManyToManyField(OrderItem, blank=True)
     completed = models.BooleanField(default=False)
-    ref_code = models.CharField(max_length=15, default=ref_code_generator)
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, null=True, blank=True)
+    date_ordered = models.DateTimeField(auto_now_add=True)
+    refund_code = models.CharField(max_length=15, default=refund_code_generator)
+    refund_requested = models.BooleanField(default=False)
+    refund_granted = models.BooleanField(default=False)
 
     def __str__(self) -> str:
-        return f'{self.user.username}: {self.ref_code}'
+        return f'{self.user.username}: {self.refund_code}'
 
     def get_total_items(self):
         total_count = 0
