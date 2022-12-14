@@ -20,35 +20,61 @@ class Product(BaseModel):
     price = models.DecimalField(decimal_places=2, max_digits=10)
     slug = models.SlugField()
 
-
     def __str__(self) -> str:
         return self.title
+
+    # def get_absolute_url(self):
+    #     # return reverse("model_detail", kwargs={"pk": self.pk})
+    #     pass
+
+    # def get_add_to_cart_url(self):
+    #     pass
+
+    # def get_remove_all_from_cart_url(self):
+    #     pass
+
+    # def get_remove_single_from_cart_url(self):
+    #     pass
 
 
 class OrderItem(BaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     item = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveSmallIntegerField()
+    completed = models.BooleanField(default=False)
 
     def __str__(self) -> str:
-        return f'{self.user}: {self.quantity} of {self.product}'
+        return f'{self.user}: {self.quantity} of {self.item}'
+
+    def get_total_price(self):
+        return self.item.price * self.quantity
 
 
 class Order(BaseModel):
     UUID = models.UUIDField(default=uuid4, primary_key=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    items = models.ManyToManyField(OrderItem)
+    items = models.ManyToManyField(OrderItem, blank=True)
     completed = models.BooleanField(default=False)
-    ref_code = models.CharField(max_length=15)
+    ref_code = models.CharField(max_length=15, default=ref_code_generator)
 
     def __str__(self) -> str:
         return f'{self.user.username}: {self.ref_code}'
 
-    def save(self, *args, **kwargs):
-        if not self.id:
-            self.ref_code = ref_code_generator()
+    def get_total_items(self):
+        total_count = 0
+        for item in self.items.all():
+            total_count += item.quantity
+        return total_count
 
-        return super().save(*args, **kwargs)
+    def get_total_price(self):
+        total_price = 0
+        for item in self.items.all():
+            total_price += item.get_total_price()
+
+        return total_price
+
+    # def get_empty_the_cart_url(self):
+    #     pass
     
 
 
