@@ -18,7 +18,7 @@ class Product(BaseModel):
     title = models.CharField(max_length=100)
     description = models.TextField() 
     price = models.DecimalField(decimal_places=2, max_digits=10)
-    slug = models.SlugField()
+    slug = models.SlugField(unique=True)
 
     def __str__(self) -> str:
         return self.title
