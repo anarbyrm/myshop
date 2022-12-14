@@ -14,11 +14,79 @@ class BaseModel(models.Model):
     pass
 
 
+class ProductCategory(BaseModel):
+    title = models.CharField(max_length=70)
+
+    def __str__(self):
+        return self.title
+
+
+class ProductSubcategory(BaseModel):
+    category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
+    title = models.CharField(max_length=70)
+
+    def __str__(self):
+        return self.title
+
+
+class ProductType(BaseModel):
+    subcategory = models.ForeignKey(ProductSubcategory, on_delete=models.SET_NULL, null=True, blank=True)
+    title = models.CharField(max_length=70)
+
+    def __str__(self):
+        return self.title
+
+
+class Size(BaseModel):
+    value = models.CharField(max_length=5)
+
+    def __str__(self):
+        return self.value
+
+
+class ProductReview(BaseModel):
+    RATING_CHOICES = (
+        (1, "Very Bad"),
+        (2, "Bad"),
+        (3, "Mediocre"),
+        (4, "Good"),
+        (5, "Excellent")
+    )
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews')
+    rating = models.CharField(max_length=1, choices=RATING_CHOICES)
+    comment = models.TextField(null=True, blank=True)
+
+
+class ProductImage(BaseModel):
+    file = models.ImageField(upload_to='images/products/additional/')
+
+
 class Product(BaseModel):
+    # type = models.ForeignKey(ProductType, on_delete=models.SET_NULL, null=True, blank=True)
     title = models.CharField(max_length=100)
-    description = models.TextField() 
+    description = models.TextField()
+    image = models.ImageField(upload_to='images/product/')
+    additional_image = models.ForeignKey(
+        ProductImage,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='photos'
+    )
+    size = models.ManyToManyField(Size, blank=True)
+    color = models.CharField(max_length=50, null=True, blank=True)
+    in_stock = models.BooleanField(default=True)
     price = models.DecimalField(decimal_places=2, max_digits=10)
     slug = models.SlugField(unique=True)
+    review = models.ForeignKey(
+        ProductReview,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviews'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return self.title
