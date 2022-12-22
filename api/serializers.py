@@ -1,16 +1,70 @@
 from rest_framework import serializers
 
-from shop.models import Product, Order, OrderItem
+from shop.models import Product, Order, OrderItem, ProductImage, ProductReview, Size
 
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = (
+            "id",
             'title',
-            "description",
             "price",
             "slug",
+            "image",
+            "color",
+            "get_overall_rating",
+        )
+
+
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = (
+            'file',
+        )
+
+
+class ProductReviewSerializer(serializers.ModelSerializer):
+
+    user = serializers.StringRelatedField()
+
+    class Meta:
+        model = ProductReview
+        fields = (
+            'user',
+            'rating',
+            'comment'
+        )
+
+
+class ProductSizeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Size
+        fields = (
+            'value',
+        )
+
+
+class ProductDetailSerializer(serializers.ModelSerializer):
+
+    photos = ProductImageSerializer(read_only=True, many=True)
+    reviews = ProductReviewSerializer(read_only=True, many=True)
+    size = ProductSizeSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Product
+        fields = (
+            "id",
+            'title',
+            "price",
+            "slug",
+            "image",
+            "color",
+            "photos",
+            "reviews",
+            "size",
+            "get_overall_rating",
         )
 
 
@@ -50,16 +104,16 @@ class OrderSerializer(serializers.ModelSerializer):
             "user",
             "order_items",
             "completed",
-            "ref_code",
+            "refund_code",
             "total_items",
             "total_price",
         )
         read_only_fields = ('total_items', 'total_price', 'order_items')
 
     def get_order_items(self, obj):
-        item = OrderItem.objects.filter(order=obj, completed=False, user=obj.user)
-        if item.exists():
-            return OrderItemSerializer(obj.items.filter(user=obj.user, completed=False), many=True).data
+        items = obj.items.all()
+        if items.exists():
+            return OrderItemSerializer(items, many=True).data
         return []
 
     def get_total_items(self, obj):

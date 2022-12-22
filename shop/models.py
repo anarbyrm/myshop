@@ -46,20 +46,36 @@ class Size(BaseModel):
 
 class ProductReview(BaseModel):
     RATING_CHOICES = (
-        (1, "Very Bad"),
-        (2, "Bad"),
-        (3, "Mediocre"),
-        (4, "Good"),
-        (5, "Excellent")
+        ('1', 1),
+        ('2', 2),
+        ('3', 3),
+        ('4', 4),
+        ('5', 5)
     )
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews')
     rating = models.CharField(max_length=1, choices=RATING_CHOICES)
     comment = models.TextField(null=True, blank=True)
+    item = models.ForeignKey(
+        'Product',
+        on_delete=models.CASCADE,
+        related_name='reviews',
+    )
+
+    def __str__(self):
+        return f'{self.user} gave {self.rating} stars to {self.item}'
+
+    class Meta:
+        unique_together = ('user', 'item')
 
 
 class ProductImage(BaseModel):
     file = models.ImageField(upload_to='images/products/additional/')
+    item = models.ForeignKey(
+        'Product',
+        on_delete=models.CASCADE,
+        related_name='photos',
+    )
 
 
 class Product(BaseModel):
@@ -67,25 +83,11 @@ class Product(BaseModel):
     title = models.CharField(max_length=100)
     description = models.TextField()
     image = models.ImageField(upload_to='images/product/')
-    additional_image = models.ForeignKey(
-        ProductImage,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='photos'
-    )
     size = models.ManyToManyField(Size, blank=True)
     color = models.CharField(max_length=50, null=True, blank=True)
     in_stock = models.BooleanField(default=True)
     price = models.DecimalField(decimal_places=2, max_digits=10)
     slug = models.SlugField(unique=True)
-    review = models.ForeignKey(
-        ProductReview,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='reviews'
-    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
@@ -95,21 +97,24 @@ class Product(BaseModel):
     #     # return reverse("model_detail", kwargs={"pk": self.pk})
     #     pass
 
-    # def get_add_to_cart_url(self):
-    #     pass
-
-    # def get_remove_all_from_cart_url(self):
-    #     pass
-
-    # def get_remove_single_from_cart_url(self):
-    #     pass
+    def get_overall_rating(self):
+        total = sum(int(review.rating) for review in self.reviews.all())
+        if total > 0:
+            count = self.reviews.count()
+            return total / count
+        return 0
 
 
 class OrderItem(BaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    cart = models.ForeignKey('Order', on_delete=models.CASCADE, related_name='items')
     item = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveSmallIntegerField()
     completed = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('cart', 'item')
+        ordering = ('completed', 'cart')
 
     def __str__(self) -> str:
         return f'{self.user}: {self.quantity} of {self.item}'
@@ -127,7 +132,6 @@ class Order(BaseModel):
 
     UUID = models.UUIDField(default=uuid4, primary_key=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    items = models.ManyToManyField(OrderItem, blank=True)
     completed = models.BooleanField(default=False)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, null=True, blank=True)
     date_ordered = models.DateTimeField(auto_now_add=True)

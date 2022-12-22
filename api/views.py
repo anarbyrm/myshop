@@ -5,15 +5,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 
 from shop.models import Product, Order, OrderItem
-from .serializers import ProductSerializer, OrderSerializer
-
-
-"""
-4. Add to cart 
-5. remove from cart totally
-6. remove single from cart
-
-"""
+from .serializers import ProductSerializer, ProductDetailSerializer, OrderSerializer
 
 
 class ProductList(ListAPIView):
@@ -23,7 +15,7 @@ class ProductList(ListAPIView):
 
 class ProductDetail(RetrieveAPIView):
     queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+    serializer_class = ProductDetailSerializer
     lookup_field = 'slug'
 
 
