@@ -7,6 +7,18 @@ from django.shortcuts import get_object_or_404
 from shop.models import Product, Order, OrderItem
 from .serializers import ProductSerializer, ProductDetailSerializer, OrderSerializer
 
+"""
+TODO: 
+- pagination
+- authentication
+- permissions
+- ShippingAddress model
+- Checkout view
+- Payment
+- payment view
+- order completing processes (changes in particular fields with signals)
+"""
+
 
 class ProductList(ListAPIView):
     queryset = Product.objects.all()
