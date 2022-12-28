@@ -153,16 +153,20 @@ class Order(BaseModel):
 
 
 class ShippingAddress(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='addresses')
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='addresses')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, null=True, blank=True)
     country = models.CharField(max_length=225)
     city = models.CharField(max_length=225)
     address = models.CharField(max_length=500)
-    zipcode = models.CharField(max_length=225)
-    use_later = models.BooleanField(default=True)
+    phone = models.CharField(max_length=50)
+    zipcode = models.CharField(max_length=20)
     date_created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.user}'s address"
+
+
+class Payment(models.Model):
+    pass
 
 

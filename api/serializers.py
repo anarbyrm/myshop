@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from shop.models import Product, Order, OrderItem, ProductImage, ProductReview, Size
+from shop.models import Product, Order, OrderItem, ProductImage, ProductReview, Size, ShippingAddress
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -122,3 +122,17 @@ class OrderSerializer(serializers.ModelSerializer):
     def get_total_price(self, obj):
         return obj.get_total_price()
 
+
+class ShippingAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ShippingAddress
+        fields = (
+            'user',
+            'order',
+            'country',
+            'city',
+            'address',
+            'zipcode',
+            'use_later',
+            'date_created',
+        )

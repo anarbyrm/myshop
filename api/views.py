@@ -6,7 +6,13 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 
 from shop.models import Product, Order, OrderItem
-from .serializers import ProductSerializer, ProductDetailSerializer, OrderSerializer
+from .serializers import (
+    ProductSerializer,
+    ProductDetailSerializer,
+    OrderSerializer,
+    ShippingAddressSerializer,
+
+)
 
 """
 TODO: 
@@ -145,4 +151,19 @@ class SearchView(APIView):
             return Response({'Products': []})
 
 
+class CheckoutView(APIView):
+    def post(self, request, format=None):
+        order = Order.objects.filter(user=request.user, completed=False)
+
+        if order.exists():
+            serializer = ShippingAddressSerializer(data=request.data)
+
+            if serializer.is_valid():
+                serializer.save(user=request.user, order=order.first())
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+
+class PaymentView(APIView):
+    pass
 

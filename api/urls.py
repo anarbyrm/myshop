@@ -10,6 +10,8 @@ from .views import (
     RemoveAllFromCart,
     RemoveSingleFromCart,
     SearchView,
+    CheckoutView,
+    PaymentView
 
 )
 
@@ -21,8 +23,9 @@ urlpatterns = [
     path("<slug>/remove-all/", RemoveAllFromCart.as_view()),
     path("<slug>/remove-single/", RemoveSingleFromCart.as_view()),
     path("my-order/<uuid>/", OrderView.as_view()),
-    path("my-order/<uuid>/address/", OrderView.as_view()),
     path('search', SearchView.as_view()),
+    path('checkout/', CheckoutView.as_view()),
+    path('payment/', PaymentView.as_view())
 
 ]
 
