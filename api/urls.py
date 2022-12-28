@@ -8,7 +8,8 @@ from .views import (
     OrderView,
     AddToCart,
     RemoveAllFromCart,
-    RemoveSingleFromCart
+    RemoveSingleFromCart,
+    SearchView,
 
 )
 
@@ -20,6 +21,9 @@ urlpatterns = [
     path("<slug>/remove-all/", RemoveAllFromCart.as_view()),
     path("<slug>/remove-single/", RemoveSingleFromCart.as_view()),
     path("my-order/<uuid>/", OrderView.as_view()),
+    path("my-order/<uuid>/address/", OrderView.as_view()),
+    path('search', SearchView.as_view()),
+
 ]
 
 if settings.DEBUG:

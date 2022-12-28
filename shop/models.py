@@ -93,10 +93,6 @@ class Product(BaseModel):
     def __str__(self) -> str:
         return self.title
 
-    # def get_absolute_url(self):
-    #     # return reverse("model_detail", kwargs={"pk": self.pk})
-    #     pass
-
     def get_overall_rating(self):
         total = sum(int(review.rating) for review in self.reviews.all())
         if total > 0:
@@ -155,8 +151,18 @@ class Order(BaseModel):
 
         return total_price
 
-    # def get_empty_the_cart_url(self):
-    #     pass
-    
+
+class ShippingAddress(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='addresses')
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='addresses')
+    country = models.CharField(max_length=225)
+    city = models.CharField(max_length=225)
+    address = models.CharField(max_length=500)
+    zipcode = models.CharField(max_length=225)
+    use_later = models.BooleanField(default=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user}'s address"
 
 

@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 from shop.models import Product, Order, OrderItem
 from .serializers import ProductSerializer, ProductDetailSerializer, OrderSerializer
@@ -126,3 +127,22 @@ class RemoveSingleFromCart(APIView):
                 return Response({"message": f"{item.item.title} removed from the cart"})
 
         return Response({"message": f"No related item in the cart"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class SearchView(APIView):
+    def get(self, request, format=None):
+        query = request.GET.get('query')
+
+        if query:
+            products = Product.objects.filter(Q(title__icontains=query) | Q(description__icontains=query))
+
+            if products.exists():
+                serializer = ProductSerializer(products, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'No match found'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({'Products': []})
+
+
+
